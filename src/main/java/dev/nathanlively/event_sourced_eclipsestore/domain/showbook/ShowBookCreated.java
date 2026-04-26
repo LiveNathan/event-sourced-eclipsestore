@@ -11,6 +11,10 @@ public final class ShowBookCreated extends ShowBookEvent {
         this.name = name;
     }
 
+    public ShowBookCreated(ShowBookId showBookId, String name) {
+        this(showBookId, null, name);
+    }
+
     public String showBookName() {
         return name;
     }

@@ -26,7 +26,7 @@ public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
     }
 
     private ShowBook(ShowBookId showBookId, String name) {
-        enqueue(new ShowBookCreated(showBookId, null, name));
+        enqueue(new ShowBookCreated(showBookId, name));
     }
 
     @Override

@@ -19,7 +19,7 @@ class ShowBookTest {
 
             assertThat(showBook.uncommittedEvents())
                     .containsExactly(
-                            new ShowBookCreated(showBook.getId(), null, "show book name")
+                            new ShowBookCreated(showBook.getId(), "show book name")
                     );
         }
 
