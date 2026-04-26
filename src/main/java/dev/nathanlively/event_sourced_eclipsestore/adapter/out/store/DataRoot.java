@@ -3,6 +3,7 @@ package dev.nathanlively.event_sourced_eclipsestore.adapter.out.store;
 import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBookEvent;
 import org.eclipse.store.gigamap.types.BinaryIndexerUUID;
 import org.eclipse.store.gigamap.types.GigaMap;
+import org.eclipse.store.storage.embedded.types.EmbeddedStorageManager;
 
 import java.util.UUID;
 
@@ -22,6 +23,16 @@ public class DataRoot {
 
     public DataRoot() {
         super();
+    }
+
+    public static DataRoot from(EmbeddedStorageManager storageManager) {
+        if (storageManager.root() instanceof DataRoot existing) {
+            return existing;
+        }
+        DataRoot fresh = new DataRoot();
+        storageManager.setRoot(fresh);
+        storageManager.storeRoot();
+        return fresh;
     }
 
     public GigaMap<ShowBookEvent> showBookEvents() {

@@ -29,6 +29,10 @@ public class EclipseStoreEventStore extends BaseEventStore<ShowBookId, ShowBookE
         this.events = dataRoot.showBookEvents();
     }
 
+    public static EclipseStoreEventStore create(EmbeddedStorageManager storageManager) {
+        return new EclipseStoreEventStore(storageManager, DataRoot.from(storageManager));
+    }
+
     @Override
     protected List<ShowBookEvent> eventsFor(ShowBookId id) {
         List<ShowBookEvent> matching = events.query(DataRoot.SHOW_BOOK_ID_INDEX.is(id.id())).toList();

@@ -9,14 +9,7 @@ public class StorageConfig {
 
     @Bean
     public DataRoot dataRoot(EmbeddedStorageManager storageManager) {
-        Object root = storageManager.root();
-        if (root instanceof DataRoot existing) {
-            return existing;
-        }
-        DataRoot fresh = new DataRoot();
-        storageManager.setRoot(fresh);
-        storageManager.storeRoot();
-        return fresh;
+        return DataRoot.from(storageManager);
     }
 
     @Bean
