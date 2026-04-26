@@ -4,12 +4,12 @@ import java.util.List;
 
 public class ShowBookFactory {
 
-    public static ShowBook reconstituteWithRegisteredEvent() {
-        ShowBookCreated customerRegistered = new ShowBookCreated(ShowBookId.createRandom(), 1L, "customer name");
-        return ShowBook.reconstitute(List.of(customerRegistered));
+    public static ShowBook reconstituteWithCreatedEvent() {
+        ShowBookCreated customerCreated = new ShowBookCreated(ShowBookId.createRandom(), 1L, "customer name");
+        return ShowBook.reconstitute(List.of(customerCreated));
     }
 
-    public static ShowBook newlyRegistered() {
+    public static ShowBook newlyCreated() {
         return ShowBook.create(ShowBookId.createRandom(), "customer name");
     }
 

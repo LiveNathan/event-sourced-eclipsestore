@@ -1,7 +1,12 @@
-package dev.nathanlively.event_sourced_eclipsestore.domain.showbook;
+package dev.nathanlively.event_sourced_eclipsestore.domain.showBook;
 
+import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBook;
+import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBookCreated;
+import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBookId;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -10,7 +15,6 @@ class ShowBookTest {
 
     @Nested
     class CommandsGenerateEvents {
-
         @Test
         void createShowBookGeneratesShowBookCreated() {
             ShowBookId showBookId = ShowBookId.createRandom();
@@ -22,54 +26,29 @@ class ShowBookTest {
                             new ShowBookCreated(showBookId, null, "show book name")
                     );
         }
-
-//        @Test
-//        void purchaseTicketsGeneratesTicketsPurchased() {
-//            ShowBook showBook = ShowBookFactory.reconstituteWithCreatedEvent();
-//            int quantity = 4;
-//            Concert concert = ConcertFactory.withTicketPriceOf(35);
-//            int paidAmount = quantity * 35;
-//            TicketOrderId ticketOrderId = TicketOrderId.createRandom();
-//
-//            showBook.purchaseTickets(concert, ticketOrderId, quantity);
-//
-//            assertThat(showBook.uncommittedEvents())
-//                    .containsExactly(
-//                            new TicketsPurchased(
-//                                    showBook.getId(),
-//                                    null,
-//                                    ticketOrderId,
-//                                    concert.getId(),
-//                                    quantity, paidAmount)
-//                    );
-//        }
-
     }
 
-//    @Nested
-//    class EventsProjectState {
-//
-//        @Test
-//        void showBookCreatedUpdatesNameAndEmail() {
-//            ShowBookId showBookId = ShowBookId.createRandom();
-//            ShowBookCreated showBookCreated = new ShowBookCreated(
-//                    showBookId, 0L, "showbook name");
-//
-//            ShowBook showBook = ShowBook.reconstitute(List.of(showBookCreated));
-//
-//            assertThat(showBook.getId())
-//                    .isEqualTo(showBookId);
-//            assertThat(showBook.name())
-//                    .isEqualTo("showbook name");
-//            assertThat(showBook.email())
-//                    .isEqualTo("email@example.com");
-//        }
-//
+    @Nested
+    class EventsProjectState {
+
+        @Test
+        void showBookCreatedUpdatesName() {
+            ShowBookId showBookId = ShowBookId.createRandom();
+            ShowBookCreated showBookCreated = new ShowBookCreated(showBookId, 0L, "showBook name");
+
+            ShowBook showBook = ShowBook.reconstitute(List.of(showBookCreated));
+
+            assertThat(showBook.getId())
+                    .isEqualTo(showBookId);
+            assertThat(showBook.name())
+                    .isEqualTo("showBook name");
+        }
+
 //        @Test
 //        void ticketsPurchasedAddsTicketOrder() {
 //            ShowBookId showBookId = ShowBookId.createRandom();
 //            ShowBookCreated showBookCreated = new ShowBookCreated(
-//                    showBookId, 1L, "showbook name");
+//                    showBookId, 1L, "showBook name");
 //            ConcertId concertId = ConcertId.createRandom();
 //            int quantity = 8;
 //            int amountPaid = quantity * 45;
@@ -95,7 +74,7 @@ class ShowBookTest {
 //        void ticketOrderForUnknownTicketIdIsEmptyOptional() {
 //            ShowBookId showBookId = ShowBookId.createRandom();
 //            ShowBookCreated showBookCreated = new ShowBookCreated(
-//                    showBookId, 1L, "showbook name");
+//                    showBookId, 1L, "showBook name");
 //            ShowBook showBook = ShowBook.reconstitute(List.of(showBookCreated));
 //
 //            Optional<ShowBook.TicketOrder> ticketOrder = showBook.ticketOrderFor(TicketOrderId.createRandom());
@@ -104,6 +83,6 @@ class ShowBookTest {
 //                    .as("Expected no Ticket Order for the unknown Ticket Order ID")
 //                    .isEmpty();
 //        }
-//    }
+    }
 
 }
