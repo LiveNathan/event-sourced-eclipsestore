@@ -3,12 +3,13 @@ package dev.nathanlively.event_sourced_eclipsestore.domain;
 import java.util.List;
 import java.util.StringJoiner;
 
+// Inspired by https://github.com/jitterted/jitterticket-event-sourced
 public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
 
     private String name;
 
     //region Creation Command
-    public static ShowBook register(ShowBookId showBookId, String name) {
+    public static ShowBook create(ShowBookId showBookId, String name) {
         return new ShowBook(showBookId, name);
     }
     //endregion

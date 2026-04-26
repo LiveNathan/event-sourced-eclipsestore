@@ -6,9 +6,7 @@ import java.util.StringJoiner;
 public final class ShowBookCreated extends ShowBookEvent {
     private final String name;
 
-    public ShowBookCreated(ShowBookId showBookId,
-                           Long eventSequence,
-                           String name) {
+    public ShowBookCreated(ShowBookId showBookId, Long eventSequence, String name) {
         super(showBookId, eventSequence);
         this.name = name;
     }
