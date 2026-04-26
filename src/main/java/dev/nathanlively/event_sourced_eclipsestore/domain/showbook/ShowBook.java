@@ -1,4 +1,6 @@
-package dev.nathanlively.event_sourced_eclipsestore.domain;
+package dev.nathanlively.event_sourced_eclipsestore.domain.showbook;
+
+import dev.nathanlively.event_sourced_eclipsestore.domain.EventSourcedAggregate;
 
 import java.util.List;
 import java.util.StringJoiner;

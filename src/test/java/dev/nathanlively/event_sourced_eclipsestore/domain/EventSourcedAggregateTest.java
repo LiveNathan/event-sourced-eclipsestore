@@ -1,5 +1,7 @@
 package dev.nathanlively.event_sourced_eclipsestore.domain;
 
+import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBookCreated;
+import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBookId;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

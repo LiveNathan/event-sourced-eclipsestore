@@ -1,25 +1,29 @@
-package dev.nathanlively.event_sourced_eclipsestore.domain;
+package dev.nathanlively.event_sourced_eclipsestore.domain.showbook;
 
 import java.util.Objects;
 import java.util.StringJoiner;
 
-public final class ShowBookNameUpdated extends ShowBookEvent {
+public final class ShowBookCreated extends ShowBookEvent {
     private final String name;
 
-    public ShowBookNameUpdated(ShowBookId showBookId, Long eventSequence, String name) {
+    public ShowBookCreated(ShowBookId showBookId, Long eventSequence, String name) {
         super(showBookId, eventSequence);
         this.name = name;
     }
 
-    public String name() {
+    public String showBookName() {
         return name;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ShowBookNameUpdated that = (ShowBookNameUpdated) o;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ShowBookCreated that = (ShowBookCreated) o;
         return Objects.equals(showBookId(), that.showBookId()) &&
                Objects.equals(eventSequence(), that.eventSequence()) &&
                Objects.equals(name, that.name);
@@ -32,10 +36,10 @@ public final class ShowBookNameUpdated extends ShowBookEvent {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", ShowBookNameUpdated.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", ShowBookCreated.class.getSimpleName() + "[", "]")
                 .add("customerId='" + showBookId() + "'")
                 .add("eventSequence=" + eventSequence())
-                .add("ticketOrderId=" + name)
+                .add("customerName='" + name + "'")
                 .toString();
     }
 }
