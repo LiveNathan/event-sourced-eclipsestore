@@ -9,10 +9,25 @@ import java.util.StringJoiner;
 public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
 
     private String name;
+    private boolean deleted;
 
     //region Creation Command
     public static ShowBook create(String name) {
         return new ShowBook(ShowBookId.createRandom(), name);
+    }
+    //endregion
+
+    //region Commands
+    public void rename(String newName) {
+        enqueue(new ShowBookNameUpdated(getId(), newName));
+    }
+
+    public void delete() {
+        enqueue(new ShowBookDeleted(getId()));
+    }
+
+    public boolean isDeleted() {
+        return deleted;
     }
     //endregion
 
@@ -36,8 +51,8 @@ public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
                 setId(registered.showBookId());
                 this.name = registered.showBookName();
             }
-            case ShowBookNameUpdated purchased -> {
-            }
+            case ShowBookNameUpdated renamed -> this.name = renamed.name();
+            case ShowBookDeleted ignored -> this.deleted = true;
         }
     }
 
