@@ -15,13 +15,11 @@ class ShowBookTest {
 
         @Test
         void createShowBookGeneratesShowBookCreated() {
-            ShowBookId showBookId = ShowBookId.createRandom();
-
-            ShowBook showBook = ShowBook.create(showBookId, "show book name");
+            ShowBook showBook = ShowBook.create("show book name");
 
             assertThat(showBook.uncommittedEvents())
                     .containsExactly(
-                            new ShowBookCreated(showBookId, null, "show book name")
+                            new ShowBookCreated(showBook.getId(), null, "show book name")
                     );
         }
 

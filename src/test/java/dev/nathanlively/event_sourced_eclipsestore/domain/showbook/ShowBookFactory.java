@@ -10,7 +10,7 @@ public class ShowBookFactory {
     }
 
     public static ShowBook newlyCreated() {
-        return ShowBook.create(ShowBookId.createRandom(), "customer name");
+        return ShowBook.create("customer name");
     }
 
 }

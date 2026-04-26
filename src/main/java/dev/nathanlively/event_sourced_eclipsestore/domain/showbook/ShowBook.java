@@ -11,8 +11,8 @@ public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
     private String name;
 
     //region Creation Command
-    public static ShowBook create(ShowBookId showBookId, String name) {
-        return new ShowBook(showBookId, name);
+    public static ShowBook create(String name) {
+        return new ShowBook(ShowBookId.createRandom(), name);
     }
     //endregion
 
