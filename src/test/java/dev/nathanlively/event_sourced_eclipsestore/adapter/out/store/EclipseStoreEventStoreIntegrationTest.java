@@ -1,6 +1,8 @@
 package dev.nathanlively.event_sourced_eclipsestore.adapter.out.store;
 
+import dev.nathanlively.event_sourced_eclipsestore.application.Checkpoint;
 import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBook;
+import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBookEvent;
 import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBookId;
 import org.eclipse.store.storage.embedded.types.EmbeddedStorage;
 import org.eclipse.store.storage.embedded.types.EmbeddedStorageManager;
@@ -9,7 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -79,6 +83,30 @@ class EclipseStoreEventStoreIntegrationTest {
                     .as("Deleted show book should be marked deleted after restart")
                     .isPresent()
                     .hasValueSatisfying(book -> assertThat(book.isDeleted()).isTrue());
+        }
+    }
+
+    @Test
+    void allEventsAfterReturnsPersistedEventsAcrossStorageRestart() {
+        ShowBook first = ShowBook.create(ShowBookId.createRandom(), "first");
+        ShowBook second = ShowBook.create(ShowBookId.createRandom(), "second");
+
+        try (EmbeddedStorageManager storageManager = EmbeddedStorage.start(storageDir)) {
+            EclipseStoreEventStore store = EclipseStoreEventStore.create(storageManager);
+            store.save(first);
+            store.save(second);
+        }
+
+        try (EmbeddedStorageManager storageManager = EmbeddedStorage.start(storageDir)) {
+            EclipseStoreEventStore store = EclipseStoreEventStore.create(storageManager);
+
+            List<ShowBookEvent> events = store.allEventsAfter(Checkpoint.INITIAL, Set.of()).toList();
+
+            assertThat(events)
+                    .as("All saved events should be replayable in sequence order after a storage restart")
+                    .hasSize(2)
+                    .extracting(ShowBookEvent::eventSequence)
+                    .isSorted();
         }
     }
 }
