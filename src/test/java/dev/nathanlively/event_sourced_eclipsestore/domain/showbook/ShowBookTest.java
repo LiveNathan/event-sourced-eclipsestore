@@ -15,36 +15,44 @@ class ShowBookTest {
 
         @Test
         void createShowBookGeneratesShowBookCreated() {
-            ShowBook showBook = ShowBook.create("show book name");
+            String showBookName = "show book name";
+
+            ShowBook showBook = ShowBook.create(showBookName);
 
             assertThat(showBook.uncommittedEvents())
+                    .as("Creating a ShowBook should generate a ShowBookCreated event")
                     .containsExactly(
-                            new ShowBookCreated(showBook.getId(), "show book name")
+                            new ShowBookCreated(showBook.getId(), showBookName)
                     );
         }
 
         @Test
         void renameShowBookGeneratesShowBookNameUpdated() {
-            ShowBook showBook = ShowBook.create("original name");
+            String originalName = "original name";
+            String newName = "new name";
+            ShowBook showBook = ShowBook.create(originalName);
 
-            showBook.rename("new name");
+            showBook.rename(newName);
 
             assertThat(showBook.uncommittedEvents())
+                    .as("Renaming a ShowBook should generate a ShowBookNameUpdated event")
                     .containsExactly(
-                            new ShowBookCreated(showBook.getId(), "original name"),
-                            new ShowBookNameUpdated(showBook.getId(), "new name")
+                            new ShowBookCreated(showBook.getId(), originalName),
+                            new ShowBookNameUpdated(showBook.getId(), newName)
                     );
         }
 
         @Test
         void deleteShowBookGeneratesShowBookDeleted() {
-            ShowBook showBook = ShowBook.create("name");
+            String name = "name";
+            ShowBook showBook = ShowBook.create(name);
 
             showBook.delete();
 
             assertThat(showBook.uncommittedEvents())
+                    .as("Deleting a ShowBook should generate a ShowBookDeleted event")
                     .containsExactly(
-                            new ShowBookCreated(showBook.getId(), "name"),
+                            new ShowBookCreated(showBook.getId(), name),
                             new ShowBookDeleted(showBook.getId())
                     );
         }
@@ -57,6 +65,7 @@ class ShowBookTest {
         @Test
         void createWithNullNameThrowsException() {
             assertThatIllegalArgumentException()
+                    .as("Creating a ShowBook with a null name should throw an IllegalArgumentException")
                     .isThrownBy(() -> ShowBook.create(null))
                     .withMessage("Name must not be null or blank.");
         }
@@ -64,6 +73,7 @@ class ShowBookTest {
         @Test
         void createWithBlankNameThrowsException() {
             assertThatIllegalArgumentException()
+                    .as("Creating a ShowBook with a blank name should throw an IllegalArgumentException")
                     .isThrownBy(() -> ShowBook.create("   "))
                     .withMessage("Name must not be null or blank.");
         }
@@ -73,6 +83,7 @@ class ShowBookTest {
             ShowBook showBook = ShowBook.create("original");
 
             assertThatIllegalArgumentException()
+                    .as("Renaming a ShowBook with a null name should throw an IllegalArgumentException")
                     .isThrownBy(() -> showBook.rename(null))
                     .withMessage("Name must not be null or blank.");
         }
@@ -82,6 +93,7 @@ class ShowBookTest {
             ShowBook showBook = ShowBook.create("original");
 
             assertThatIllegalArgumentException()
+                    .as("Renaming a ShowBook with a blank name should throw an IllegalArgumentException")
                     .isThrownBy(() -> showBook.rename("  "))
                     .withMessage("Name must not be null or blank.");
         }
@@ -92,6 +104,7 @@ class ShowBookTest {
             showBook.delete();
 
             assertThatIllegalStateException()
+                    .as("Renaming a deleted ShowBook should throw an IllegalStateException")
                     .isThrownBy(() -> showBook.rename("new name"))
                     .withMessage("Cannot rename a deleted ShowBook.");
         }
@@ -102,6 +115,7 @@ class ShowBookTest {
             showBook.delete();
 
             assertThatIllegalStateException()
+                    .as("Deleting an already deleted ShowBook should throw an IllegalStateException")
                     .isThrownBy(showBook::delete)
                     .withMessage("ShowBook is already deleted.");
         }
@@ -114,26 +128,31 @@ class ShowBookTest {
         @Test
         void showBookCreatedUpdatesName() {
             ShowBookId showBookId = ShowBookId.createRandom();
-            ShowBookCreated showBookCreated = new ShowBookCreated(showBookId, 0L, "showBook name");
+            String showBookName = "showBook name";
+            ShowBookCreated showBookCreated = new ShowBookCreated(showBookId, 0L, showBookName);
 
             ShowBook showBook = ShowBook.reconstitute(List.of(showBookCreated));
 
-            assertThat(showBook.getId())
-                    .isEqualTo(showBookId);
+            ShowBookAssert.assertThat(showBook)
+                    .as("Reconstituted ShowBook should have the ID from the event")
+                    .hasId(showBookId);
             assertThat(showBook.name())
-                    .isEqualTo("showBook name");
+                    .as("Reconstituted ShowBook should have the name from the event")
+                    .isEqualTo(showBookName);
         }
 
         @Test
         void showBookNameUpdatedUpdatesName() {
             ShowBookId showBookId = ShowBookId.createRandom();
+            String updatedName = "updated";
             ShowBookCreated created = new ShowBookCreated(showBookId, 0L, "original");
-            ShowBookNameUpdated updated = new ShowBookNameUpdated(showBookId, 1L, "updated");
+            ShowBookNameUpdated updated = new ShowBookNameUpdated(showBookId, 1L, updatedName);
 
             ShowBook showBook = ShowBook.reconstitute(List.of(created, updated));
 
             assertThat(showBook.name())
-                    .isEqualTo("updated");
+                    .as("Reconstituted ShowBook should have the updated name")
+                    .isEqualTo(updatedName);
         }
 
         @Test
@@ -145,6 +164,7 @@ class ShowBookTest {
             ShowBook showBook = ShowBook.reconstitute(List.of(created, deleted));
 
             assertThat(showBook.isDeleted())
+                    .as("Reconstituted ShowBook should be marked as deleted")
                     .isTrue();
         }
 
