@@ -1,7 +1,6 @@
 package dev.nathanlively.event_sourced_eclipsestore.application;
 
 import dev.nathanlively.event_sourced_eclipsestore.adapter.out.store.EclipseStoreEventStore;
-import dev.nathanlively.event_sourced_eclipsestore.domain.Event;
 import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.*;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -9,8 +8,6 @@ import org.junit.jupiter.api.Test;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -20,7 +17,7 @@ class BaseEventStoreTest {
     class Save {
 
         @Test
-        void saveSendsEventsToMultipleSubscribedConsumers() {
+        void saveNotifiesAllSubscribedConsumers() {
             EclipseStoreEventStore eventStore = EclipseStoreEventStore.createNull();
             AtomicInteger counter = new AtomicInteger(0);
             EventStreamConsumer countingSpy = stream -> {
@@ -39,37 +36,44 @@ class BaseEventStoreTest {
         }
 
         @Test
-        void saveThrowsExceptionWhenAggregateIdIsNull() {
+        void saveFailsIfAggregateIdIsNull() {
             EclipseStoreEventStore eventStore = EclipseStoreEventStore.createNull();
             ShowBook showBook = ShowBookFactory.createDummy();
             showBook.setId(null);
 
             assertThatIllegalArgumentException()
+                    .as("Saving an aggregate with a null ID should throw IllegalArgumentException")
                     .isThrownBy(() -> eventStore.save(showBook))
                     .withMessageContaining("must have an ID");
         }
 
         @Test
-        void savePropagatesExceptionFromUnderlyingStore() {
+        void savePropagatesStorageException() {
             RuntimeException storeException = new RuntimeException("Store failure");
             EclipseStoreEventStore eventStore = EclipseStoreEventStore.createNull(
                     new EclipseStoreEventStore.StoreOptions.WithException(storeException)
             );
 
             assertThatThrownBy(() -> eventStore.save(ShowBookFactory.createDummy()))
+                    .as("Exceptions from the underlying storage should be propagated")
                     .isSameAs(storeException);
         }
 
         @Test
-        void saveClearsUncommittedEventsFromAggregate() {
+        void saveClearsAggregateUncommittedEvents() {
             EclipseStoreEventStore eventStore = EclipseStoreEventStore.createNull();
             ShowBook showBook = ShowBookFactory.createDummy();
             showBook.rename("New Name");
-            assertThat(showBook.uncommittedEvents()).isNotEmpty();
+
+            assertThat(showBook.uncommittedEvents())
+                    .as("ShowBook should have uncommitted events before saving")
+                    .isNotEmpty();
 
             eventStore.save(showBook);
 
-            assertThat(showBook.uncommittedEvents()).isEmpty();
+            assertThat(showBook.uncommittedEvents())
+                    .as("ShowBook should have no uncommitted events after saving")
+                    .isEmpty();
         }
     }
 
@@ -77,16 +81,18 @@ class BaseEventStoreTest {
     class FindById {
 
         @Test
-        void findByIdReturnsEmptyWhenAggregateDoesNotExist() {
+        void findByIdReturnsEmptyWhenNotFound() {
             EclipseStoreEventStore eventStore = EclipseStoreEventStore.createNull();
 
             Optional<ShowBook> result = eventStore.findById(ShowBookId.createRandom());
 
-            assertThat(result).isEmpty();
+            assertThat(result)
+                    .as("Finding a non-existent aggregate should return an empty Optional")
+                    .isEmpty();
         }
 
         @Test
-        void findByIdReturnsAggregateWhenItExists() {
+        void findByIdReturnsExistingAggregate() {
             EclipseStoreEventStore eventStore = EclipseStoreEventStore.createNull();
             ShowBook showBook = ShowBookFactory.createDummy();
             eventStore.save(showBook);
@@ -94,6 +100,7 @@ class BaseEventStoreTest {
             Optional<ShowBook> result = eventStore.findById(showBook.getId());
 
             assertThat(result)
+                    .as("Finding an existing aggregate should return it in an Optional")
                     .isPresent()
                     .get()
                     .extracting(ShowBook::getId)
@@ -105,7 +112,7 @@ class BaseEventStoreTest {
     class Subscribe {
 
         @Test
-        void subscribersOnlyReceiveDesiredEventTypes() {
+        void subscribersOnlyReceiveFilteredEvents() {
             EclipseStoreEventStore eventStore = EclipseStoreEventStore.createNull();
             SpyConsumer createdSubscriber = new SpyConsumer(ShowBookCreated.class);
             SpyConsumer renamedSubscriber = new SpyConsumer(ShowBookNameUpdated.class);
@@ -114,43 +121,16 @@ class BaseEventStoreTest {
             eventStore.subscribe(renamedSubscriber, Set.of(ShowBookNameUpdated.class));
             eventStore.subscribe(deletedSubscriber, Set.of(ShowBookDeleted.class));
 
-            ShowBook showBook = ShowBook.create(ShowBookId.createRandom(), "Acoustic Night");
-            showBook.rename("Open Mic Night");
+            String originalName = "Acoustic Night";
+            String newName = "Open Mic Night";
+            ShowBook showBook = ShowBook.create(ShowBookId.createRandom(), originalName);
+            showBook.rename(newName);
+
             eventStore.save(showBook);
 
             createdSubscriber.verifyHandleInvoked();
             renamedSubscriber.verifyHandleInvoked();
             deletedSubscriber.verifyHandleNotInvoked();
-        }
-    }
-
-    private static class SpyConsumer implements EventStreamConsumer {
-
-        private final Class<? extends Event> desiredEventClass;
-        private boolean handleInvoked = false;
-
-        SpyConsumer(Class<? extends Event> desiredEventClass) {
-            this.desiredEventClass = desiredEventClass;
-        }
-
-        @Override
-        public void handle(Stream<? extends Event> eventStream) {
-            handleInvoked = true;
-            assertThat(eventStream)
-                    .as("Expected only events of type " + desiredEventClass)
-                    .allMatch((Predicate<Event>) event -> event.getClass().equals(desiredEventClass));
-        }
-
-        void verifyHandleInvoked() {
-            assertThat(handleInvoked)
-                    .as("handle(eventStream) should have been invoked")
-                    .isTrue();
-        }
-
-        void verifyHandleNotInvoked() {
-            assertThat(handleInvoked)
-                    .as("handle(eventStream) should NOT have been invoked")
-                    .isFalse();
         }
     }
 }
