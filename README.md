@@ -2,6 +2,8 @@
 
 This is a spike project exploring simple event-sourced persistence using [EclipseStore](https://eclipsestore.io/).
 
+<img width="572" height="257" alt="CleanShot 2026-04-27 at 14 03 51" src="https://github.com/user-attachments/assets/d55e1eeb-e75c-4d94-b362-c5aace51e1fa" />
+
 ## Overview
 
 The goal of this project is to implement a lightweight Event Store using EclipseStore's object-graph persistence capabilities. It demonstrates how to store, retrieve, and query domain events while maintaining the benefits of a pure Java domain model.
