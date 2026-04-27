@@ -13,16 +13,30 @@ public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
 
     //region Creation Command
     public static ShowBook create(String name) {
+        validateName(name);
         return new ShowBook(ShowBookId.createRandom(), name);
+    }
+
+    private static void validateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Name must not be null or blank.");
+        }
     }
     //endregion
 
     //region Commands
     public void rename(String newName) {
+        if (deleted) {
+            throw new IllegalStateException("Cannot rename a deleted ShowBook.");
+        }
+        validateName(newName);
         enqueue(new ShowBookNameUpdated(getId(), newName));
     }
 
     public void delete() {
+        if (deleted) {
+            throw new IllegalStateException("ShowBook is already deleted.");
+        }
         enqueue(new ShowBookDeleted(getId()));
     }
     //endregion
