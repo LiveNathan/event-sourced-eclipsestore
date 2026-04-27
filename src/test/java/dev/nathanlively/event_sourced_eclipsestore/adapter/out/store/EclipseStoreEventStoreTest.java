@@ -111,7 +111,7 @@ class EclipseStoreEventStoreTest {
             EclipseStoreEventStore store = EclipseStoreEventStore.createNull();
             store.save(first);
             store.save(second);
-            long firstEventSequence = store.eventsForAggregate(first.getId()).getFirst().eventSequence();
+            long firstEventSequence = store.eventsForAggregate(first.id()).getFirst().eventSequence();
 
             List<ShowBookEvent> events = store.allEventsAfter(Checkpoint.of(firstEventSequence), Set.of()).toList();
 

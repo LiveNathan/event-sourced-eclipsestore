@@ -31,7 +31,7 @@ public abstract class EventSourcedAggregate<EVENT extends Event, ID extends Id> 
         uncommittedEvents.clear();
     }
 
-    public ID getId() {
+    public ID id() {
         return id;
     }
 

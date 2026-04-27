@@ -97,14 +97,14 @@ class BaseEventStoreTest {
             ShowBook showBook = ShowBookFactory.createDummy();
             eventStore.save(showBook);
 
-            Optional<ShowBook> result = eventStore.findById(showBook.getId());
+            Optional<ShowBook> result = eventStore.findById(showBook.id());
 
             assertThat(result)
                     .as("Finding an existing aggregate should return it in an Optional")
                     .isPresent()
                     .get()
-                    .extracting(ShowBook::getId)
-                    .isEqualTo(showBook.getId());
+                    .extracting(ShowBook::id)
+                    .isEqualTo(showBook.id());
         }
     }
 

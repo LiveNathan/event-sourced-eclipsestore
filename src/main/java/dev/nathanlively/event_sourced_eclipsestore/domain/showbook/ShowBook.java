@@ -28,14 +28,14 @@ public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
             throw new IllegalStateException("Cannot rename a deleted ShowBook.");
         }
         validateName(newName);
-        enqueue(new ShowBookNameUpdated(getId(), newName));
+        enqueue(new ShowBookNameUpdated(id(), newName));
     }
 
     public void delete() {
         if (deleted) {
             throw new IllegalStateException("ShowBook is already deleted.");
         }
-        enqueue(new ShowBookDeleted(getId()));
+        enqueue(new ShowBookDeleted(id()));
     }
     //endregion
 
@@ -78,7 +78,7 @@ public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
     @Override
     public String toString() {
         return new StringJoiner(", ", ShowBook.class.getSimpleName() + "[", "]")
-                .add("id='" + getId() + "'")
+                .add("id='" + id() + "'")
                 .add("name='" + name + "'")
                 .toString();
     }

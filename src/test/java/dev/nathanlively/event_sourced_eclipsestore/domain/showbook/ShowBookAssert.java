@@ -13,8 +13,8 @@ public class ShowBookAssert extends AbstractAssert<ShowBookAssert, ShowBook> {
 
     public ShowBookAssert hasId(ShowBookId expectedId) {
         isNotNull();
-        if (!actual.getId().equals(expectedId)) {
-            failWithMessage("Expected document to have ID <%s> but was <%s>", expectedId, actual.getId());
+        if (!actual.id().equals(expectedId)) {
+            failWithMessage("Expected document to have ID <%s> but was <%s>", expectedId, actual.id());
         }
         return this;
     }

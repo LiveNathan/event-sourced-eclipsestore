@@ -24,7 +24,7 @@ public abstract class BaseEventStore<ID extends Id, EVENT extends Event, AGGREGA
 
     @Override
     public void save(AGGREGATE aggregate) {
-        ID aggregateId = aggregate.getId();
+        ID aggregateId = aggregate.id();
         if (aggregateId == null) {
             throw new IllegalArgumentException("The Aggregate " + aggregate + " must have an ID");
         }
