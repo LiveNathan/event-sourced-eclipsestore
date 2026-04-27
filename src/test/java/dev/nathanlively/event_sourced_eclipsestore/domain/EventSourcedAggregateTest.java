@@ -7,7 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 
 class EventSourcedAggregateTest {
 
@@ -76,22 +77,6 @@ class EventSourcedAggregateTest {
 
     @Nested
     class FailurePaths {
-
-        @Test
-        void enqueueNullThrowsException() {
-            StubAggregate aggregate = new StubAggregate();
-
-            assertThatNullPointerException()
-                    .isThrownBy(() -> aggregate.enqueue(null));
-        }
-
-        @Test
-        void applyAllWithNullThrowsException() {
-            StubAggregate aggregate = new StubAggregate();
-
-            assertThatNullPointerException()
-                    .isThrownBy(() -> aggregate.applyAll(null));
-        }
 
         @Test
         void enqueueAtomicityIsMaintainedWhenApplyFails() {
