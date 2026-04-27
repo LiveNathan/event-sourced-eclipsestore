@@ -13,7 +13,7 @@ public class StorageConfig {
     }
 
     @Bean
-    public EclipseStoreEventStore eclipseStoreEventStore(EmbeddedStorageManager storageManager, DataRoot dataRoot) {
-        return new EclipseStoreEventStore(storageManager, dataRoot);
+    public EclipseStoreEventStore eclipseStoreEventStore(EmbeddedStorageManager storageManager) {
+        return EclipseStoreEventStore.create(storageManager);
     }
 }

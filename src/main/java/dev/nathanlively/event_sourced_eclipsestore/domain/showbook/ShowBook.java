@@ -25,10 +25,6 @@ public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
     public void delete() {
         enqueue(new ShowBookDeleted(getId()));
     }
-
-    public boolean isDeleted() {
-        return deleted;
-    }
     //endregion
 
     //region Event Application
@@ -55,10 +51,17 @@ public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
             case ShowBookDeleted ignored -> this.deleted = true;
         }
     }
+    //endregion
 
+    //region Queries
     public String name() {
         return name;
     }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+    //endregion Queries
 
     @Override
     public String toString() {
