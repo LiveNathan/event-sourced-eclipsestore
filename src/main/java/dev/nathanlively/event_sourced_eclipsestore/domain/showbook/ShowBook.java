@@ -12,9 +12,9 @@ public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
     private boolean deleted;
 
     //region Creation Command
-    public static ShowBook create(String name) {
+    public static ShowBook create(ShowBookId showBookId, String name) {
         validateName(name);
-        return new ShowBook(ShowBookId.createRandom(), name);
+        return new ShowBook(showBookId, name);
     }
 
     private static void validateName(String name) {

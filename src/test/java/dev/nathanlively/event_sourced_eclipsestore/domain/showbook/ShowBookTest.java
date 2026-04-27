@@ -15,45 +15,48 @@ class ShowBookTest {
 
         @Test
         void createShowBookGeneratesShowBookCreated() {
+            ShowBookId showBookId = ShowBookId.createRandom();
             String showBookName = "show book name";
 
-            ShowBook showBook = ShowBook.create(showBookName);
+            ShowBook showBook = ShowBook.create(showBookId, showBookName);
 
             assertThat(showBook.uncommittedEvents())
                     .as("Creating a ShowBook should generate a ShowBookCreated event")
                     .containsExactly(
-                            new ShowBookCreated(showBook.getId(), showBookName)
+                            new ShowBookCreated(showBookId, showBookName)
                     );
         }
 
         @Test
         void renameShowBookGeneratesShowBookNameUpdated() {
+            ShowBookId showBookId = ShowBookId.createRandom();
             String originalName = "original name";
             String newName = "new name";
-            ShowBook showBook = ShowBook.create(originalName);
+            ShowBook showBook = ShowBook.create(showBookId, originalName);
 
             showBook.rename(newName);
 
             assertThat(showBook.uncommittedEvents())
                     .as("Renaming a ShowBook should generate a ShowBookNameUpdated event")
                     .containsExactly(
-                            new ShowBookCreated(showBook.getId(), originalName),
-                            new ShowBookNameUpdated(showBook.getId(), newName)
+                            new ShowBookCreated(showBookId, originalName),
+                            new ShowBookNameUpdated(showBookId, newName)
                     );
         }
 
         @Test
         void deleteShowBookGeneratesShowBookDeleted() {
+            ShowBookId showBookId = ShowBookId.createRandom();
             String name = "name";
-            ShowBook showBook = ShowBook.create(name);
+            ShowBook showBook = ShowBook.create(showBookId, name);
 
             showBook.delete();
 
             assertThat(showBook.uncommittedEvents())
                     .as("Deleting a ShowBook should generate a ShowBookDeleted event")
                     .containsExactly(
-                            new ShowBookCreated(showBook.getId(), name),
-                            new ShowBookDeleted(showBook.getId())
+                            new ShowBookCreated(showBookId, name),
+                            new ShowBookDeleted(showBookId)
                     );
         }
 
@@ -66,7 +69,7 @@ class ShowBookTest {
         void createWithNullNameThrowsException() {
             assertThatIllegalArgumentException()
                     .as("Creating a ShowBook with a null name should throw an IllegalArgumentException")
-                    .isThrownBy(() -> ShowBook.create(null))
+                    .isThrownBy(() -> ShowBook.create(ShowBookId.createRandom(), null))
                     .withMessage("Name must not be null or blank.");
         }
 
@@ -74,13 +77,13 @@ class ShowBookTest {
         void createWithBlankNameThrowsException() {
             assertThatIllegalArgumentException()
                     .as("Creating a ShowBook with a blank name should throw an IllegalArgumentException")
-                    .isThrownBy(() -> ShowBook.create("   "))
+                    .isThrownBy(() -> ShowBook.create(ShowBookId.createRandom(), "   "))
                     .withMessage("Name must not be null or blank.");
         }
 
         @Test
         void renameWithNullNameThrowsException() {
-            ShowBook showBook = ShowBook.create("original");
+            ShowBook showBook = ShowBook.create(ShowBookId.createRandom(), "original");
 
             assertThatIllegalArgumentException()
                     .as("Renaming a ShowBook with a null name should throw an IllegalArgumentException")
@@ -90,7 +93,7 @@ class ShowBookTest {
 
         @Test
         void renameWithBlankNameThrowsException() {
-            ShowBook showBook = ShowBook.create("original");
+            ShowBook showBook = ShowBook.create(ShowBookId.createRandom(), "original");
 
             assertThatIllegalArgumentException()
                     .as("Renaming a ShowBook with a blank name should throw an IllegalArgumentException")
@@ -100,7 +103,7 @@ class ShowBookTest {
 
         @Test
         void renameDeletedShowBookThrowsException() {
-            ShowBook showBook = ShowBook.create("name");
+            ShowBook showBook = ShowBook.create(ShowBookId.createRandom(), "name");
             showBook.delete();
 
             assertThatIllegalStateException()
@@ -111,7 +114,7 @@ class ShowBookTest {
 
         @Test
         void deleteDeletedShowBookThrowsException() {
-            ShowBook showBook = ShowBook.create("name");
+            ShowBook showBook = ShowBook.create(ShowBookId.createRandom(), "name");
             showBook.delete();
 
             assertThatIllegalStateException()

@@ -5,12 +5,12 @@ import java.util.List;
 public class ShowBookFactory {
 
     public static ShowBook reconstituteWithCreatedEvent() {
-        ShowBookCreated customerCreated = new ShowBookCreated(ShowBookId.createRandom(), 1L, "customer name");
-        return ShowBook.reconstitute(List.of(customerCreated));
+        ShowBookCreated showBookCreated = new ShowBookCreated(ShowBookId.createRandom(), 1L, "show book name");
+        return ShowBook.reconstitute(List.of(showBookCreated));
     }
 
     public static ShowBook createDummy() {
-        return ShowBook.create("show book name");
+        return ShowBook.create(ShowBookId.createRandom(), "show book name");
     }
 
 }

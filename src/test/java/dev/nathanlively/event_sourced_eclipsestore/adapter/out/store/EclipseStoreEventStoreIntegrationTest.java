@@ -1,6 +1,7 @@
 package dev.nathanlively.event_sourced_eclipsestore.adapter.out.store;
 
 import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBook;
+import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBookId;
 import org.eclipse.store.storage.embedded.types.EmbeddedStorage;
 import org.eclipse.store.storage.embedded.types.EmbeddedStorageManager;
 import org.junit.jupiter.api.Tag;
@@ -20,7 +21,7 @@ class EclipseStoreEventStoreIntegrationTest {
 
     @Test
     void persistedShowBookIsRetrievableAfterStorageRestart() {
-        ShowBook showBook = ShowBook.create("Acoustic Night");
+        ShowBook showBook = ShowBook.create(ShowBookId.createRandom(), "Acoustic Night");
 
         // Create
         try (EmbeddedStorageManager storageManager = EmbeddedStorage.start(storageDir)) {

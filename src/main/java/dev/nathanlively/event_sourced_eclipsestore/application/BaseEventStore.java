@@ -29,9 +29,12 @@ public abstract class BaseEventStore<ID extends Id, EVENT extends Event, AGGREGA
             throw new IllegalArgumentException("The Aggregate " + aggregate + " must have an ID");
         }
         Stream<EVENT> uncommittedEvents = aggregate.uncommittedEvents();
-        List<EVENT> savedEvents = save(aggregateId, uncommittedEvents).toList();
+        List<EVENT> savedEvents = append(aggregateId, uncommittedEvents).toList();
+        aggregate.markEventsCommitted();
         notifyConsumers(savedEvents);
     }
+
+    protected abstract Stream<EVENT> append(ID aggregateId, Stream<EVENT> uncommittedEvents);
 
     private void notifyConsumers(List<EVENT> savedEvents) {
         eventStreamConsumers.forEach(consumer -> {

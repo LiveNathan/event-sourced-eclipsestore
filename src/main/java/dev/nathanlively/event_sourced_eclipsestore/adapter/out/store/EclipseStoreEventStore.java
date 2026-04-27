@@ -2,12 +2,10 @@ package dev.nathanlively.event_sourced_eclipsestore.adapter.out.store;
 
 import dev.nathanlively.event_sourced_eclipsestore.application.BaseEventStore;
 import dev.nathanlively.event_sourced_eclipsestore.application.Checkpoint;
-import dev.nathanlively.event_sourced_eclipsestore.application.port.ShowBookEventStore;
 import dev.nathanlively.event_sourced_eclipsestore.domain.Event;
 import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBook;
 import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBookEvent;
 import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBookId;
-import org.eclipse.store.gigamap.types.GigaIterator;
 import org.eclipse.store.gigamap.types.GigaMap;
 import org.eclipse.store.storage.embedded.types.EmbeddedStorageManager;
 
@@ -18,7 +16,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
-public class EclipseStoreEventStore extends BaseEventStore<ShowBookId, ShowBookEvent, ShowBook> implements ShowBookEventStore {
+public class EclipseStoreEventStore extends BaseEventStore<ShowBookId, ShowBookEvent, ShowBook> {
 
     private final Storage storage;
 
@@ -35,11 +33,15 @@ public class EclipseStoreEventStore extends BaseEventStore<ShowBookId, ShowBookE
         return new EclipseStoreEventStore(new InMemoryStorage());
     }
 
-    public static EclipseStoreEventStore createNull(ShowBookEventStore.StoreOptions options) {
+    public static EclipseStoreEventStore createNull(StoreOptions options) {
         return switch (options) {
-            case ShowBookEventStore.StoreOptions.WithException(var e) ->
-                    new EclipseStoreEventStore(new ThrowingStorage(e));
+            case StoreOptions.WithException(var e) -> new EclipseStoreEventStore(new ThrowingStorage(e));
         };
+    }
+
+    @Override
+    protected Stream<ShowBookEvent> append(ShowBookId aggregateId, Stream<ShowBookEvent> uncommittedEvents) {
+        return storage.append(aggregateId, uncommittedEvents);
     }
 
     @Override
@@ -47,9 +49,9 @@ public class EclipseStoreEventStore extends BaseEventStore<ShowBookId, ShowBookE
         return storage.eventsFor(id);
     }
 
-    @Override
-    public Stream<ShowBookEvent> save(ShowBookId aggregateId, Stream<ShowBookEvent> uncommittedEvents) {
-        return storage.append(aggregateId, uncommittedEvents);
+    public sealed interface StoreOptions {
+        record WithException(RuntimeException exceptionToThrow) implements StoreOptions {
+        }
     }
 
     @Override
@@ -91,15 +93,11 @@ public class EclipseStoreEventStore extends BaseEventStore<ShowBookId, ShowBookE
 
         @Override
         public Stream<ShowBookEvent> allEventsAfter(Checkpoint checkpoint, Set<Class<? extends Event>> desiredEventTypes) {
-            List<ShowBookEvent> result = new ArrayList<>();
-            try (GigaIterator<ShowBookEvent> it = dataRoot.showBookEvents().iterator()) {
-                while (it.hasNext()) {
-                    ShowBookEvent event = it.next();
-                    if (event.eventSequence() > checkpoint.value()
-                        && (desiredEventTypes.isEmpty() || desiredEventTypes.contains(event.getClass()))) {
-                        result.add(event);
-                    }
-                }
+            List<ShowBookEvent> result = dataRoot.showBookEvents()
+                    .query(DataRoot.EVENT_SEQUENCE_INDEX.greaterThan(checkpoint.value()))
+                    .toList();
+            if (!desiredEventTypes.isEmpty()) {
+                result.removeIf(event -> !desiredEventTypes.contains(event.getClass()));
             }
             result.sort(Comparator.comparingLong(ShowBookEvent::eventSequence));
             return result.stream();

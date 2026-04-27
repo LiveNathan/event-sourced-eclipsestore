@@ -1,11 +1,8 @@
 package dev.nathanlively.event_sourced_eclipsestore.application;
 
-import dev.nathanlively.event_sourced_eclipsestore.application.port.ShowBookEventStore;
+import dev.nathanlively.event_sourced_eclipsestore.adapter.out.store.EclipseStoreEventStore;
 import dev.nathanlively.event_sourced_eclipsestore.domain.Event;
-import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBook;
-import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBookCreated;
-import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBookDeleted;
-import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBookNameUpdated;
+import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -19,7 +16,7 @@ class BaseEventStoreTest {
 
     @Test
     void saveSendsEventsToMultipleSubscribedConsumers() {
-        ShowBookEventStore eventStore = ShowBookEventStore.createNull();
+        EclipseStoreEventStore eventStore = EclipseStoreEventStore.createNull();
         AtomicInteger counter = new AtomicInteger(0);
         EventStreamConsumer countingSpy = stream -> {
             //noinspection ResultOfMethodCallIgnored
@@ -29,7 +26,7 @@ class BaseEventStoreTest {
         eventStore.subscribe(countingSpy, Set.of(ShowBookCreated.class));
         eventStore.subscribe(countingSpy, Set.of(ShowBookCreated.class));
 
-        eventStore.save(ShowBook.create("Acoustic Night"));
+        eventStore.save(ShowBook.create(ShowBookId.createRandom(), "Acoustic Night"));
 
         assertThat(counter)
                 .as("Each subscribed consumer should be invoked once")
@@ -38,7 +35,7 @@ class BaseEventStoreTest {
 
     @Test
     void subscribersOnlyReceiveDesiredEventTypes() {
-        ShowBookEventStore eventStore = ShowBookEventStore.createNull();
+        EclipseStoreEventStore eventStore = EclipseStoreEventStore.createNull();
         SpyConsumer createdSubscriber = new SpyConsumer(ShowBookCreated.class);
         SpyConsumer renamedSubscriber = new SpyConsumer(ShowBookNameUpdated.class);
         SpyConsumer deletedSubscriber = new SpyConsumer(ShowBookDeleted.class);
@@ -46,7 +43,7 @@ class BaseEventStoreTest {
         eventStore.subscribe(renamedSubscriber, Set.of(ShowBookNameUpdated.class));
         eventStore.subscribe(deletedSubscriber, Set.of(ShowBookDeleted.class));
 
-        ShowBook showBook = ShowBook.create("Acoustic Night");
+        ShowBook showBook = ShowBook.create(ShowBookId.createRandom(), "Acoustic Night");
         showBook.rename("Open Mic Night");
         eventStore.save(showBook);
 

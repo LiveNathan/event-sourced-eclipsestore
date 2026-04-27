@@ -1,6 +1,5 @@
 package dev.nathanlively.event_sourced_eclipsestore.adapter.out.store;
 
-import dev.nathanlively.event_sourced_eclipsestore.application.port.ShowBookEventStore;
 import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBook;
 import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBookAssert;
 import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBookFactory;
@@ -20,18 +19,19 @@ class EclipseStoreEventStoreTest {
 
         @Test
         void findByIdReturnsUploadedDocument() {
-            ShowBook showBook = ShowBook.create("show book name");
+            ShowBookId showBookId = ShowBookId.createRandom();
+            ShowBook showBook = ShowBook.create(showBookId, "show book name");
             EclipseStoreEventStore store = EclipseStoreEventStore.createNull();
 
             store.save(showBook);
 
-            Optional<ShowBook> found = store.findById(showBook.getId());
+            Optional<ShowBook> found = store.findById(showBookId);
 
             assertThat(found)
                     .as("Saved document should be findable by its ID")
                     .isPresent()
                     .hasValueSatisfying(doc -> ShowBookAssert.assertThat(doc)
-                            .hasId(showBook.getId()));
+                            .hasId(showBookId));
         }
     }
 
@@ -53,7 +53,7 @@ class EclipseStoreEventStoreTest {
         void forcedErrorThrowsOnSave() {
             RuntimeException boom = new RuntimeException("storage unavailable");
             EclipseStoreEventStore store = EclipseStoreEventStore.createNull(
-                    new ShowBookEventStore.StoreOptions.WithException(boom));
+                    new EclipseStoreEventStore.StoreOptions.WithException(boom));
             ShowBook document = ShowBookFactory.createDummy();
 
             assertThatThrownBy(() -> store.save(document))
@@ -65,7 +65,7 @@ class EclipseStoreEventStoreTest {
         void forcedErrorThrowsOnFindById() {
             RuntimeException boom = new RuntimeException("storage unavailable");
             EclipseStoreEventStore store = EclipseStoreEventStore.createNull(
-                    new ShowBookEventStore.StoreOptions.WithException(boom));
+                    new EclipseStoreEventStore.StoreOptions.WithException(boom));
 
             assertThatThrownBy(() -> store.findById(ShowBookId.createRandom()))
                     .as("FindById should throw the configured exception when storage is unavailable")

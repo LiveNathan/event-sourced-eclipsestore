@@ -3,6 +3,7 @@ package dev.nathanlively.event_sourced_eclipsestore.adapter.out.store;
 import dev.nathanlively.event_sourced_eclipsestore.domain.showbook.ShowBookEvent;
 import org.eclipse.store.gigamap.types.BinaryIndexerUUID;
 import org.eclipse.store.gigamap.types.GigaMap;
+import org.eclipse.store.gigamap.types.IndexerLong;
 import org.eclipse.store.storage.embedded.types.EmbeddedStorageManager;
 
 import java.util.UUID;
@@ -16,8 +17,16 @@ public class DataRoot {
         }
     };
 
+    public static final IndexerLong<ShowBookEvent> EVENT_SEQUENCE_INDEX = new IndexerLong.Abstract<>() {
+        @Override
+        protected Long getLong(ShowBookEvent entity) {
+            return entity.eventSequence();
+        }
+    };
+
     private final GigaMap<ShowBookEvent> showBookEvents = GigaMap.<ShowBookEvent>Builder()
             .withBitmapIndex(SHOW_BOOK_ID_INDEX)
+            .withBitmapIndex(EVENT_SEQUENCE_INDEX)
             .build();
     private long sequenceCounter = 0L;
 

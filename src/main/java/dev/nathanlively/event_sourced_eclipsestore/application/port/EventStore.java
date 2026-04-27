@@ -15,13 +15,6 @@ import java.util.stream.Stream;
 public interface EventStore<ID extends Id, EVENT extends Event, AGGREGATE extends EventSourcedAggregate<EVENT, ID>> {
     void save(AGGREGATE aggregate);
 
-    /**
-     * Saves events associated with the aggregate ID so they can be retrieved later.
-     * Does NOT tell subscribers that these events were saved, that happens in the above
-     * save(AGGREGATE aggregate) method
-     */
-    Stream<EVENT> save(ID aggregateId, Stream<EVENT> uncommittedEvents);
-
     Optional<AGGREGATE> findById(ID id);
 
     List<EVENT> eventsForAggregate(ID id);
