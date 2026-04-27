@@ -66,28 +66,10 @@ class ShowBookTest {
     class GuardClauses {
 
         @Test
-        void createWithNullNameThrowsException() {
-            assertThatIllegalArgumentException()
-                    .as("Creating a ShowBook with a null name should throw an IllegalArgumentException")
-                    .isThrownBy(() -> ShowBook.create(ShowBookId.createRandom(), null))
-                    .withMessage("Name must not be null or blank.");
-        }
-
-        @Test
         void createWithBlankNameThrowsException() {
             assertThatIllegalArgumentException()
                     .as("Creating a ShowBook with a blank name should throw an IllegalArgumentException")
                     .isThrownBy(() -> ShowBook.create(ShowBookId.createRandom(), "   "))
-                    .withMessage("Name must not be null or blank.");
-        }
-
-        @Test
-        void renameWithNullNameThrowsException() {
-            ShowBook showBook = ShowBook.create(ShowBookId.createRandom(), "original");
-
-            assertThatIllegalArgumentException()
-                    .as("Renaming a ShowBook with a null name should throw an IllegalArgumentException")
-                    .isThrownBy(() -> showBook.rename(null))
                     .withMessage("Name must not be null or blank.");
         }
 

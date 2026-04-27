@@ -18,9 +18,7 @@ public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
     }
 
     private static void validateName(String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Name must not be null or blank.");
-        }
+        if (name.isBlank()) throw new IllegalArgumentException("Name must not be null or blank.");
     }
     //endregion
 
