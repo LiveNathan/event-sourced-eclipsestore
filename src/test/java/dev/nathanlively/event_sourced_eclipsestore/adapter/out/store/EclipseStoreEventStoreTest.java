@@ -15,6 +15,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class EclipseStoreEventStoreTest {
 
+    private EclipseStoreEventStore storeThatThrows(RuntimeException exception) {
+        return EclipseStoreEventStore.createNull(
+                new EclipseStoreEventStore.StoreOptions.WithException(exception));
+    }
+
     @Nested
     class HappyPath {
 
@@ -51,6 +56,7 @@ class EclipseStoreEventStoreTest {
                     .as("Events for an aggregate should come back in the order they were appended")
                     .hasSize(3)
                     .hasExactlyElementsOfTypes(ShowBookCreated.class, ShowBookNameUpdated.class, ShowBookDeleted.class);
+
             assertThat(events)
                     .as("Event sequences should be strictly increasing")
                     .extracting(ShowBookEvent::eventSequence)
@@ -61,9 +67,9 @@ class EclipseStoreEventStoreTest {
         void eventsForAggregateIsolatesEventsByAggregateId() {
             ShowBookId firstId = ShowBookId.createRandom();
             ShowBookId secondId = ShowBookId.createRandom();
-            ShowBook first = ShowBook.create(firstId, "first");
-            ShowBook second = ShowBook.create(secondId, "second");
-            second.rename("second renamed");
+            ShowBook first = ShowBook.create(firstId, "irrelevant");
+            ShowBook second = ShowBook.create(secondId, "irrelevant");
+            second.rename("irrelevant");
             EclipseStoreEventStore store = EclipseStoreEventStore.createNull();
 
             store.save(first);
@@ -73,6 +79,7 @@ class EclipseStoreEventStoreTest {
                     .as("Events for the first aggregate should not include events from another aggregate")
                     .hasSize(1)
                     .allSatisfy(event -> assertThat(event.showBookId()).isEqualTo(firstId));
+
             assertThat(store.eventsForAggregate(secondId))
                     .as("Events for the second aggregate should not include events from another aggregate")
                     .hasSize(2)
@@ -133,44 +140,6 @@ class EclipseStoreEventStoreTest {
     }
 
     @Nested
-    class FailurePaths {
-
-        @Test
-        void forcedErrorThrowsOnSave() {
-            RuntimeException boom = new RuntimeException("storage unavailable");
-            EclipseStoreEventStore store = EclipseStoreEventStore.createNull(
-                    new EclipseStoreEventStore.StoreOptions.WithException(boom));
-            ShowBook showBook = ShowBookFactory.createDummy();
-
-            assertThatThrownBy(() -> store.save(showBook))
-                    .as("Save should throw the configured exception when storage is unavailable")
-                    .isEqualTo(boom);
-        }
-
-        @Test
-        void forcedErrorThrowsOnFindById() {
-            RuntimeException boom = new RuntimeException("storage unavailable");
-            EclipseStoreEventStore store = EclipseStoreEventStore.createNull(
-                    new EclipseStoreEventStore.StoreOptions.WithException(boom));
-
-            assertThatThrownBy(() -> store.findById(ShowBookId.createRandom()))
-                    .as("FindById should throw the configured exception when storage is unavailable")
-                    .isEqualTo(boom);
-        }
-
-        @Test
-        void forcedErrorThrowsOnAllEventsAfter() {
-            RuntimeException boom = new RuntimeException("storage unavailable");
-            EclipseStoreEventStore store = EclipseStoreEventStore.createNull(
-                    new EclipseStoreEventStore.StoreOptions.WithException(boom));
-
-            assertThatThrownBy(() -> store.allEventsAfter(Checkpoint.INITIAL, Set.of()))
-                    .as("allEventsAfter should throw the configured exception when storage is unavailable")
-                    .isEqualTo(boom);
-        }
-    }
-
-    @Nested
     class Nullability {
 
         @Test
@@ -182,6 +151,41 @@ class EclipseStoreEventStoreTest {
             assertThat(found)
                     .as("Searching for a non-existent show book ID should return an empty Optional")
                     .isEmpty();
+        }
+    }
+
+    @Nested
+    class FailurePaths {
+
+        @Test
+        void saveRethrowsConfiguredException() {
+            RuntimeException boom = new RuntimeException("storage unavailable");
+            EclipseStoreEventStore store = storeThatThrows(boom);
+            ShowBook showBook = ShowBookFactory.createDummy();
+
+            assertThatThrownBy(() -> store.save(showBook))
+                    .as("Save should throw the configured exception when storage is unavailable")
+                    .isEqualTo(boom);
+        }
+
+        @Test
+        void findByIdRethrowsConfiguredException() {
+            RuntimeException boom = new RuntimeException("storage unavailable");
+            EclipseStoreEventStore store = storeThatThrows(boom);
+
+            assertThatThrownBy(() -> store.findById(ShowBookId.createRandom()))
+                    .as("FindById should throw the configured exception when storage is unavailable")
+                    .isEqualTo(boom);
+        }
+
+        @Test
+        void allEventsAfterRethrowsConfiguredException() {
+            RuntimeException boom = new RuntimeException("storage unavailable");
+            EclipseStoreEventStore store = storeThatThrows(boom);
+
+            assertThatThrownBy(() -> store.allEventsAfter(Checkpoint.INITIAL, Set.of()))
+                    .as("allEventsAfter should throw the configured exception when storage is unavailable")
+                    .isEqualTo(boom);
         }
     }
 }
