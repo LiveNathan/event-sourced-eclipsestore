@@ -9,8 +9,8 @@ public class ShowBookFactory {
         return ShowBook.reconstitute(List.of(customerCreated));
     }
 
-    public static ShowBook newlyCreated() {
-        return ShowBook.create("customer name");
+    public static ShowBook createDummy() {
+        return ShowBook.create("show book name");
     }
 
 }
