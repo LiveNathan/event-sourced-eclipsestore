@@ -27,6 +27,17 @@ The project follows a **Ports and Adapters (Hexagonal Architecture)** pattern:
 - **Application**: Defines the `EventStore` port and the `BaseEventStore` logic.
 - **Adapter**: The `EclipseStoreEventStore` implements the port, mapping domain events to EclipseStore persistence.
 
+### Events as Records + Sealed Interface
+
+Events are modeled as immutable Java `record`s implementing a `sealed interface` (`ShowBookEvent`). This differs from
+the abstract-class hierarchy used in the JitterTicket project that inspired this spike: instead of mutating an
+`eventSequence` field on the event after the store assigns it, the store calls a `withSequence(...)` wither that returns
+a new record. Benefits:
+
+- No hand-rolled `equals`/`hashCode`/`toString`.
+- Truly immutable events — no setters anywhere.
+- Exhaustive pattern matching in `apply(...)` switches; the compiler flags missing cases when a new event type is added.
+
 ### Persistence Strategy
 Unlike traditional relational databases or specialized event stores, this project uses EclipseStore to persist an object graph.
 - **DataRoot**: The root object for EclipseStore, containing a `GigaMap` of events.
