@@ -57,7 +57,7 @@ public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
         switch (showBookEvent) {
             case ShowBookCreated registered -> {
                 setId(registered.showBookId());
-                this.name = registered.showBookName();
+                this.name = registered.name();
             }
             case ShowBookNameUpdated renamed -> this.name = renamed.name();
             case ShowBookDeleted ignored -> this.deleted = true;

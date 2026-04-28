@@ -6,10 +6,6 @@ public record ShowBookCreated(ShowBookId showBookId, Long eventSequence, String 
         this(showBookId, null, name);
     }
 
-    public String showBookName() {
-        return name;
-    }
-
     @Override
     public ShowBookCreated withSequence(Long eventSequence) {
         return new ShowBookCreated(showBookId, eventSequence, name);
