@@ -25,10 +25,7 @@ class EventSourcedAggregateTest {
         }
     }
 
-    private static class StubEvent extends Event {
-        public StubEvent(Long eventSequence) {
-            super(eventSequence);
-        }
+    private record StubEvent(Long eventSequence) implements Event {
     }
 
     private record StubId(UUID id) implements Id {

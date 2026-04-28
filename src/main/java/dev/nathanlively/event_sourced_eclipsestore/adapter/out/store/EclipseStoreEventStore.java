@@ -72,10 +72,9 @@ public class EclipseStoreEventStore extends BaseEventStore<ShowBookId, ShowBookE
         @Override
         public Stream<ShowBookEvent> append(ShowBookId id, Stream<ShowBookEvent> uncommittedEvents) {
             GigaMap<ShowBookEvent> events = dataRoot.showBookEvents();
-            List<ShowBookEvent> toSave = uncommittedEvents.toList();
-            for (ShowBookEvent event : toSave) {
-                event.setEventSequence(dataRoot.nextSequence());
-            }
+            List<ShowBookEvent> toSave = uncommittedEvents
+                    .map(event -> event.withSequence(dataRoot.nextSequence()))
+                    .toList();
             events.addAll(toSave);
             events.store();
             storageManager.store(dataRoot);
@@ -127,11 +126,10 @@ public class EclipseStoreEventStore extends BaseEventStore<ShowBookId, ShowBookE
 
         @Override
         public Stream<ShowBookEvent> append(ShowBookId id, Stream<ShowBookEvent> uncommittedEvents) {
-            List<ShowBookEvent> toSave = uncommittedEvents.toList();
-            for (ShowBookEvent event : toSave) {
-                event.setEventSequence(sequenceCounter.incrementAndGet());
-                events.add(event);
-            }
+            List<ShowBookEvent> toSave = uncommittedEvents
+                    .map(event -> event.withSequence(sequenceCounter.incrementAndGet()))
+                    .toList();
+            events.addAll(toSave);
             return toSave.stream();
         }
 
