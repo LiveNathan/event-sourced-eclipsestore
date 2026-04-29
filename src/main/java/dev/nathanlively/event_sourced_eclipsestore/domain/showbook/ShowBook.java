@@ -2,6 +2,7 @@ package dev.nathanlively.event_sourced_eclipsestore.domain.showbook;
 
 import dev.nathanlively.event_sourced_eclipsestore.domain.EventSourcedAggregate;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -9,6 +10,7 @@ import java.util.StringJoiner;
 public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
 
     private String name;
+    private ZonedDateTime startDate;
     private boolean deleted;
 
     //region Creation Command
@@ -29,6 +31,10 @@ public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
         }
         validateName(newName);
         enqueue(new ShowBookNameUpdated(id(), newName));
+    }
+
+    public void scheduleStartDate(ZonedDateTime startDate) {
+        enqueue(new ShowBookStartDateScheduled(id(), startDate));
     }
 
     public void delete() {
@@ -60,6 +66,7 @@ public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
                 this.name = registered.name();
             }
             case ShowBookNameUpdated renamed -> this.name = renamed.name();
+            case ShowBookStartDateScheduled scheduled -> this.startDate = scheduled.startDate();
             case ShowBookDeleted ignored -> this.deleted = true;
         }
     }
@@ -68,6 +75,10 @@ public class ShowBook extends EventSourcedAggregate<ShowBookEvent, ShowBookId> {
     //region Queries
     public String name() {
         return name;
+    }
+
+    public ZonedDateTime startDate() {
+        return startDate;
     }
 
     public boolean isDeleted() {

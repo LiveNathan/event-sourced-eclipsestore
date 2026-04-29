@@ -3,6 +3,8 @@ package dev.nathanlively.event_sourced_eclipsestore.domain.showbook;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
@@ -42,6 +44,19 @@ class ShowBookTest {
                             new ShowBookCreated(showBookId, originalName),
                             new ShowBookNameUpdated(showBookId, newName)
                     );
+        }
+
+        @Test
+        void scheduleStartDateGeneratesShowBookStartDateScheduled() {
+            ShowBookId showBookId = ShowBookId.createRandom();
+            ZonedDateTime startDate = ZonedDateTime.of(2026, 6, 15, 19, 30, 0, 0, ZoneId.of("America/New_York"));
+            ShowBook showBook = ShowBook.create(showBookId, "show book name");
+            showBook.markEventsCommitted();
+
+            showBook.scheduleStartDate(startDate);
+
+            assertThat(showBook.uncommittedEvents())
+                    .containsExactly(new ShowBookStartDateScheduled(showBookId, startDate));
         }
 
         @Test
@@ -138,6 +153,19 @@ class ShowBookTest {
             assertThat(showBook.name())
                     .as("Reconstituted ShowBook should have the updated name")
                     .isEqualTo(updatedName);
+        }
+
+        @Test
+        void showBookStartDateScheduledUpdatesStartDate() {
+            ShowBookId showBookId = ShowBookId.createRandom();
+            ZonedDateTime startDate = ZonedDateTime.of(2026, 6, 15, 19, 30, 0, 0, ZoneId.of("America/New_York"));
+            ShowBookCreated created = new ShowBookCreated(showBookId, 0L, "name");
+            ShowBookStartDateScheduled scheduled = new ShowBookStartDateScheduled(showBookId, 1L, startDate);
+
+            ShowBook showBook = ShowBook.reconstitute(List.of(created, scheduled));
+
+            assertThat(showBook.startDate())
+                    .isEqualTo(startDate);
         }
 
         @Test
